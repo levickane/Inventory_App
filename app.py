@@ -10,10 +10,10 @@ from peewee import *
 db = SqliteDatabase('inventory.db')
 
 class Product(Model):
-    product_id = CharField(primary_key = True)
+    product_id = AutoField(primary_key = True)
     product_name = TextField(unique = True)
     product_quantity = IntegerField(default = 0)
-    product_price = IntegerField(null = False)
+    product_price = IntegerField()
     date_updated = DateTimeField()
     class Meta:
         database = db
@@ -35,21 +35,18 @@ def initialize():
             print(product_dicts)
 
 def clean_name(product):
-    return re.match("\"?\w+\s-\s\w+\,?\s?\w*\"?", product)
+    return re.match("\"?\w+\s-\s\w+\,?\s?\w*?\"?", product)
 
 def price_to_cents(product):
-    price_match = re.match("^\D\d*.\d{2}\Z", product)
-    if price_match:
-        price_no_sign = re.sub("\D", '', price_match)
-        price_in_cents = float(float(price_no_sign) * 100)
-        return price_in_cents
+    price_no_sign = product.replace('$', '')
+    price_now_cents = int(float(price_no_sign)*100)
+    return price_now_cents
 
 def clean_quantity(product):
-    return int(product['product_quantity'])
+    return int(product)
 
 def clean_date(product):
-    return  datetime.datetime.strptime(product['date_updated'], '%m/%d/%Y')
-    
+    return datetime.datetime.strptime(product, '%m/%d/%Y')
 
 def add_product():
     pass
@@ -73,4 +70,8 @@ if __name__ == '__main__':
 
 
 
-    
+    # price_match = re.match("^\D\d*.\d{2}\Z", product)
+    #if price_match:
+     #   price_no_sign = re.sub("\D", '', price_match)
+      #  price_in_cents = int(float(price_no_sign) * 100)
+       # return price_in_cents
