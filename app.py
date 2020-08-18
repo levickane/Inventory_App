@@ -41,9 +41,10 @@ def initialize():
                     duplicate_record.date_updated = clean_date(product['date_updated'])
                     duplicate_record.save()
 
-                    
-        #print(product_dicts)
-
+def clear_terminal():
+    """Clears the terminal for a new entry"""
+    os.system('cls' if os.name == 'nt' else 'clear')
+    
 def price_to_cents(product):
     price_no_sign = product.replace('$', '')
     price_now_cents = int(float(price_no_sign)*100)
@@ -54,6 +55,28 @@ def clean_quantity(product):
 
 def clean_date(product):
     return datetime.datetime.strptime(product, '%m/%d/%Y')
+    
+def view_order():
+    """View the order"""
+    id_number = int(input("Please enter a product ID number: "))
+    product = Product.get(id_number)
+    print(f"ID: {product.product_id}")
+    print(f"Name: {product.product_name}")
+    print(f"Quantity: {product.product_quantity}")
+    print(f"Price: ${format(product.product_price / 100)}")
+    print(f"Date Updated: {product.date_updated}")
+    
+    
+        
+def add_product():
+    """Add a product"""
+    pass
+
+def backup():
+    """Backup the database"""
+    pass
+
+
 
 menu = OrderedDict([
     ('v', view_order),
@@ -67,36 +90,16 @@ def menu_loop():
     while choice != 'q':
         clear_terminal()
         print("Enter 'q' to quit.")
-        for key, value in menu.items:
+        for key, value in menu.items():
             print("{}) {}".format(key, value.__doc__))
-        choice = input("Action: ").lower().srtip()
+        choice = input("Action: ").lower()
         if choice in menu:
             clear_terminal()
             menu[choice]()
-    
-
-def view_order():
-    """View the order"""
-    pass
-        
-
-def add_product():
-    """Add a product"""
-    pass
-
-def backup():
-    """Backup the database"""
-    pass
-
-def clear_terminal():
-    """Clears the terminal for a new entry"""
-    os.system('cls' if os.name == 'nt' else 'clear')
-    pass
 
 if __name__ == '__main__':
     error_list = []
     initialize()
-    print(error_list)
     menu_loop()
     
 
