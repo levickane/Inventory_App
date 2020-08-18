@@ -23,19 +23,26 @@ def initialize():
     db.connect()
     db.create_tables([Product], safe=True)
     with open('inventory.csv', newline='') as inventory_csv_file:
-        inventory_reader = csv.DictReader(inventory_csv_file)
+        inventory_reader = csv.DictReader(inventory_csv_file, delimiter=',')
         product_dicts = list(inventory_reader)
         for product in product_dicts:
-            Product.insert(
-                product_name = clean_name(product['product_name']),
-                product_price = price_to_cents(product['product_price']),
-                product_quantity = clean_quantity(product['product_quantity']),
-                date_updated = clean_date(product['date_updated'])
-            )
-        print(product_dicts)
+            try:
+                Product.insert(
+                    product_name = product['product_name'],
+                    product_price = price_to_cents(product['product_price']),
+                    product_quantity = clean_quantity(product['product_quantity']),
+                    date_updated = clean_date(product['date_updated'])
+                ).execute()
+            except IntegrityError:
+                duplicate_record = Product.get(product_name=product['product_name'])
+                if duplicate_record.date_updated <= clean_date(product['date_updated']):
+                    duplicate_record.product_price = price_to_cents(product['product_price'])
+                    duplicate_record.product_quantity = clean_quantity(product['product_quantity'])
+                    duplicate_record.date_updated = clean_date(product['date_updated'])
+                    duplicate_record.save()
 
-def clean_name(product):
-    return re.match("\"?\w+\s-\s\w+\,?\s?\w*?\"?", product)
+                    
+        #print(product_dicts)
 
 def price_to_cents(product):
     price_no_sign = product.replace('$', '')
@@ -48,23 +55,49 @@ def clean_quantity(product):
 def clean_date(product):
     return datetime.datetime.strptime(product, '%m/%d/%Y')
 
+menu = OrderedDict([
+    ('v', view_order),
+    ('a', add_product),
+    ('b', backup),
+])
+
+def menu_loop():
+    """Show the Menu"""
+    choice = None
+    while choice != 'q':
+        clear_terminal()
+        print("Enter 'q' to quit.")
+        for key, value in menu.items:
+            print("{}) {}".format(key, value.__doc__))
+        choice = input("Action: ").lower().srtip()
+        if choice in menu:
+            clear_terminal()
+            menu[choice]()
+    
+
+def view_order():
+    """View the order"""
+    pass
+        
+
 def add_product():
+    """Add a product"""
+    pass
+
+def backup():
+    """Backup the database"""
     pass
 
 def clear_terminal():
     """Clears the terminal for a new entry"""
     os.system('cls' if os.name == 'nt' else 'clear')
-
-def menu_loop():
     pass
-
-def backup():
-    pass
-
 
 if __name__ == '__main__':
+    error_list = []
     initialize()
-    
+    print(error_list)
+    menu_loop()
     
 
 
