@@ -26,13 +26,13 @@ def initialize():
         inventory_reader = csv.DictReader(inventory_csv_file)
         product_dicts = list(inventory_reader)
         for product in product_dicts:
-            Product.create(
+            Product.insert(
                 product_name = clean_name(product['product_name']),
                 product_price = price_to_cents(product['product_price']),
                 product_quantity = clean_quantity(product['product_quantity']),
                 date_updated = clean_date(product['date_updated'])
             )
-            print(product_dicts)
+        print(product_dicts)
 
 def clean_name(product):
     return re.match("\"?\w+\s-\s\w+\,?\s?\w*?\"?", product)
