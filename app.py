@@ -194,6 +194,7 @@ def menu_loop():
             clear_terminal()
             menu[choice]()
         elif choice == 'q':
+            clear_terminal()
             exit()
         while choice not in menu and choice != 'q':
             choice = input("That's not a valid choice. please try again: ")
@@ -201,6 +202,7 @@ def menu_loop():
                 clear_terminal()
                 menu[choice]()
             elif choice == 'q':
+                clear_terminal()
                 exit()
 
 if __name__ == '__main__':
