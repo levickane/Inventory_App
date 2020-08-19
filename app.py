@@ -41,6 +41,22 @@ def initialize():
                     duplicate_record.date_updated = clean_date(product['date_updated'])
                     duplicate_record.save()
 
+def new_row(new_product):
+    try:
+        Product.create(
+            product_name = new_product['product_name'],
+            product_price = price_to_cents(new_product['product_price']),
+            product_quantity = clean_quantity(new_product['product_quantity']),
+            date_updated = clean_date(new_product['date_updated'])
+        ).execute()
+    except IntegrityError:
+        duplicate_record = Product.get(product_name=new_product['product_name'])
+        if duplicate_record.date_updated <= clean_date(new_product['date_updated']):
+            duplicate_record.product_price = price_to_cents(new_product['product_price'])
+            duplicate_record.product_quantity = clean_quantity(new_product['product_quantity'])
+            duplicate_record.date_updated = clean_date(new_product['date_updated'])
+            duplicate_record.save()
+
 def clear_terminal():
     """Clears the terminal for a new entry"""
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -58,19 +74,41 @@ def clean_date(product):
     
 def view_order():
     """View the order"""
-    id_number = int(input("Please enter a product ID number: "))
-    product = Product.get(id_number)
-    print(f"ID: {product.product_id}")
-    print(f"Name: {product.product_name}")
-    print(f"Quantity: {product.product_quantity}")
-    print(f"Price: ${format(product.product_price / 100)}")
-    print(f"Date Updated: {product.date_updated}")
-    
-    
-        
+    while True:
+        try:
+            id_number = int(input("Please enter a product ID number OR press any non-number key to return to Main Menu: "))
+            product = Product.get(id_number)
+            clear_terminal()
+            print(f"ID: {product.product_id}")
+            print(f"Name: {product.product_name}")
+            print(f"Quantity: {product.product_quantity}")
+            print(f"Price: ${format(product.product_price / 100, '.2f')}") #Converting Float to Dollars and Cents found this in StackOverflow
+            print(f"Date Updated: {product.date_updated}")
+        except DoesNotExist:
+            clear_terminal()
+            print("Product ID does not exist. Product ID ranges between 1 and {}.".format(len(Product)))
+        except ValueError:
+            break
+
 def add_product():
     """Add a product"""
-    pass
+    print("Enter your entry")
+    while True:
+        new_product = OrderedDict()
+        new_product['product_name'] = input("Please Input Product Name:  ")
+        new_product['product_quantity'] = int(input("Please Input Product Quantity:  "))
+        new_product['product_price'] = price_to_cents(input("Please Input Product Price (USD):  "))
+        new_product['date_updated'] = datetime.datetime.now()
+        if input("Save Entry? [Yn] ").lower() != 'n':
+            new_row(new_product)
+            clear_terminal()
+            print("Saved Successfully!")
+            input("Press any key to return to the main menu ")
+            break
+        else:
+            break
+
+
 
 def backup():
     """Backup the database"""
