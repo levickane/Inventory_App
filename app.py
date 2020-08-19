@@ -77,9 +77,9 @@ def view_order():
     id_number = None
     while True:
         try:
-            id_number = input("Please enter a product ID number between numbers 1-{}: ".format(len(Product)))
+            id_number = input("Please enter a product ID number: ")
             while id_number.isalpha() and id_number != 'q':
-                id_number = input("\nThat's not a valid entry, please select an ID with a number between 1 and {}, or enter 'q' to return to the Main Menu: ".format(len(Product)))
+                id_number = input("\nThat's not a valid entry, please select an ID with a number, or enter 'q' to return to the Main Menu: ")
             id_number = int(id_number)
             product = Product.get(id_number)
             clear_terminal()
@@ -88,16 +88,40 @@ def view_order():
             print(f"Quantity: {product.product_quantity}")
             print(f"Price: ${format(product.product_price / 100, '.2f')}") #Converting Float to Dollars and Cents - found this in StackOverflow
             print(f"Date Updated: {product.date_updated}\n")
-            more_products = input("Would you like to view another product? [yN] ").lower()
-            if more_products == "n":
-                break
-            else:
-                clear_terminal()
+            print('d) To delete product')
+            print('m) To view more products')
+            print('q) To return to the main menu')
+            while True:
+                next_action = input("What would you like to do? [d/m/q] ").lower()
+                if next_action == "q":
+                    menu_loop()
+                    break
+                elif next_action == 'm':
+                    clear_terminal()
+                    view_order()
+                elif next_action == 'd':
+                    delete_product(product)
+                    print('m) To view more products')
+                    print('q) To return to the main menu')
+                    while True:
+                        next_next_action = input("What would you like to do? [m/q] ").lower()
+                        if next_next_action == 'q':
+                            menu_loop()
+                            break
+                        elif next_next_action == 'm':
+                            clear_terminal()
+                            view_order()
+                        elif next_action != 'd' or 'm' or 'q':
+                            print("Not a valid entry, try again\n")
+                elif next_action != 'd' or 'm' or 'q':
+                    print("Not a valid entry, try again\n")
         except DoesNotExist:
             clear_terminal()
-            print("Product ID does not exist. Product ID ranges between 1 and {}.".format(len(Product)))
+            print("Product ID does not exist. Please try again")
         except ValueError:
             break
+
+
 
 def add_product():
     """Add a product"""
@@ -144,6 +168,12 @@ def backup():
                 })
         print("Data has been backed up successfully!\n")
         input("Press enter to return to the main menu")
+
+def delete_product(product):
+    """Delete a Product"""
+    if input("are you sure you want to Delete this product? [Y/N]").lower() == 'y':
+        product.delete_instance()
+        print("\n**Product has been TERMINATED**\n")
             
 menu = OrderedDict([
     ('v', view_order),
@@ -163,11 +193,15 @@ def menu_loop():
         if choice in menu:
             clear_terminal()
             menu[choice]()
+        elif choice == 'q':
+            exit()
         while choice not in menu and choice != 'q':
             choice = input("That's not a valid choice. please try again: ")
             if choice in menu:
                 clear_terminal()
                 menu[choice]()
+            elif choice == 'q':
+                exit()
 
 if __name__ == '__main__':
     initialize()
